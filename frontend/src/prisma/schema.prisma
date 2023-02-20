@@ -1,6 +1,6 @@
 datasource db {
   provider = "mongodb"
-  url      = env("DATABASE_URL")
+  url      = env("MONGODB_URI")
 }
 
 generator client {
@@ -8,26 +8,24 @@ generator client {
 }
 
 model Account {
-  id  String  @id @default(auto()) @map("_id") @db.ObjectId
+  id                 String  @id @default(auto()) @map("_id") @db.ObjectId
   userId             String
   type               String
   provider           String
   providerAccountId  String
-  refresh_token      String?  @db.String
-  access_token       String?  @db.String
+  refresh_token      String? @db.String
+  access_token       String? @db.String
   expires_at         Int?
   token_type         String?
   scope              String?
-  id_token           String?  @db.String
+  id_token           String? @db.String
   session_state      String?
-
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
   @@unique([provider, providerAccountId])
 }
 
 model Session {
-  id  String  @id @default(auto()) @map("_id") @db.ObjectId
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
   sessionToken String   @unique
   userId       String
   expires      DateTime
@@ -35,19 +33,22 @@ model Session {
 }
 
 model User {
-  id  String  @id @default(auto()) @map("_id") @db.ObjectId
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  accounts      Account[]
-  sessions      Session[]
+  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  name           String?
+  email          String?   @unique
+  emailVerified  DateTime?
+  image          String?
+  username       String?  @unique
+  accounts       Account[]
+  sessions       Session[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 }
 
 model VerificationToken {
+  id         String  @id @default(auto()) @map("_id") @db.ObjectId
   identifier String
   token      String   @unique
   expires    DateTime
-
   @@unique([identifier, token])
 }
