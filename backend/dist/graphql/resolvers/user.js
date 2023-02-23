@@ -7,3 +7,4 @@ const resolvers = {
     },
     Subscription: {},
 };
+export default resolvers;
