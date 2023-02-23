@@ -1,6 +1,3 @@
-import { ApolloServer } from "@apollo/server";
-import { startStandaloneServer } from "@apollo/server/standalone";
-
 const typeDefs = `#graphql
 
     type User {
@@ -21,5 +18,4 @@ const typeDefs = `#graphql
         error: String
     }
 `;
-
 export default typeDefs;

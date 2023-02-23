@@ -3,10 +3,12 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "type":"module",
+  "type": "module",
   "scripts": {
     "compile": "tsc",
-    "start": "npm run compile && node ./dist/index.js"
+    "compile_and_watch": "tsc -w",
+    "start": "npm run compile && node ./dist/index.js",
+    "dev": "npm run compile_and_watch && node ./dist/index.js"
   },
   "keywords": [],
   "author": "",
