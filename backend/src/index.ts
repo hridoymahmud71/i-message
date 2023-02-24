@@ -35,7 +35,7 @@ const schema = makeExecutableSchema({
   resolvers,
 });
 
-const server = new ApolloServer<GraphQLContext>({
+const server = new ApolloServer({
   schema,
   plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
 });
@@ -52,10 +52,15 @@ app.use(
   // expressMiddleware accepts the same arguments:
   // an Apollo Server instance and optional configuration options
   expressMiddleware(server, {
-    context: async ({ req }): Promise<GraphQLContext> => {
-      const session = await getSession({ req });
-      console.log("Here is session", session);
-      return null;
+    context: async ({ req }) => {
+      try {
+        const session = await getSession({ req });
+        console.log("Here is session", session);
+        console.log("Here is req", req.body);
+        return session;
+      } catch (error) {
+        console.log("why ", error);
+      }
     },
   })
 );
