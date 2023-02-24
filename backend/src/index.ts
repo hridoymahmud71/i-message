@@ -1,6 +1,7 @@
 import { ApolloServer } from "@apollo/server";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
 import { makeExecutableSchema } from "@graphql-tools/schema";
+import * as dotenv from "dotenv";
 
 import express from "express";
 import http from "http";
@@ -16,12 +17,19 @@ interface MyContext {
   token?: String;
 }
 
+dotenv.config();
+
 // Required logic for integrating with Express
 const app = express();
 // Our httpServer handles incoming requests to our Express app.
 // Below, we tell Apollo Server to "drain" this httpServer,
 // enabling our servers to shut down gracefully.
 const httpServer = http.createServer(app);
+
+const corsOptions = {
+  origin: [process.env.CLIENT_ORIGIN],
+  credentials: true,
+};
 
 const schema = makeExecutableSchema({
   typeDefs,
@@ -38,14 +46,14 @@ await server.start();
 // Set up our Express middleware to handle CORS, body parsing,
 // and our expressMiddleware function.
 app.use(
-  "/",
-  cors<cors.CorsRequest>(),
+  "/graphql",
+  cors<cors.CorsRequest>(corsOptions),
   // 50mb is the limit that `startStandaloneServer` uses, but you may configure this to suit your needs
   bodyParser.json({ limit: "50mb" }),
   // expressMiddleware accepts the same arguments:
   // an Apollo Server instance and optional configuration options
   expressMiddleware(server, {
-    context: async ({ req }) => ({ token: req.headers.token }),
+    context: async ({ req, res }) => ({ token: req.headers.token }),
   })
 );
 
