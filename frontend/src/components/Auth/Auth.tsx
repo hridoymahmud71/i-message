@@ -22,7 +22,12 @@ const Auth: React.FunctionComponent<IAuthProps> = ({
     CreateUsernameVariable
   >(UserOperations.Mutations.createUsername);
 
+  console.log("Here is data", data);
+
   const onSubmit = async () => {
+    if (!username) {
+      return;
+    }
     try {
       await createUsername({
         variables: { username },

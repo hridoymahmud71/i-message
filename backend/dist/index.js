@@ -1,21 +1,40 @@
 import { ApolloServer } from "@apollo/server";
-import { startStandaloneServer } from "@apollo/server/standalone";
+import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
 import { makeExecutableSchema } from "@graphql-tools/schema";
+import express from "express";
+import http from "http";
+import cors from "cors";
+import { expressMiddleware } from "@apollo/server/express4";
+import bodyParser from "body-parser";
 // internal exports
 import typeDefs from "../src/graphql/typeDefs";
 import resolvers from "../src/graphql/resolvers";
-// The ApolloServer constructor requires two parameters: your schema
-// definition and your set of resolvers.
+// Required logic for integrating with Express
+const app = express();
+// Our httpServer handles incoming requests to our Express app.
+// Below, we tell Apollo Server to "drain" this httpServer,
+// enabling our servers to shut down gracefully.
+const httpServer = http.createServer(app);
 const schema = makeExecutableSchema({
     typeDefs,
     resolvers,
 });
 const server = new ApolloServer({
     schema,
+    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
 });
-// Passing an ApolloServer instance to the `startStandaloneServer` function:
-//  1. creates an Express app
-//  2. installs your ApolloServer instance as middleware
-//  3. prepares your app to handle incoming requests
-const { url } = await startStandaloneServer(server, { listen: { port: 4000 } });
-console.log(`🚀 Server listening at: ${url}`);
+// Ensure we wait for our server to start
+await server.start();
+// Set up our Express middleware to handle CORS, body parsing,
+// and our expressMiddleware function.
+app.use("/", cors(), 
+// 50mb is the limit that `startStandaloneServer` uses, but you may configure this to suit your needs
+bodyParser.json({ limit: "50mb" }), 
+// expressMiddleware accepts the same arguments:
+// an Apollo Server instance and optional configuration options
+expressMiddleware(server, {
+    context: async ({ req }) => ({ token: req.headers.token }),
+}));
+// Modified server startup
+await new Promise((resolve) => httpServer.listen({ port: 4000 }, resolve));
+console.log(`🚀 Server ready at http://localhost:4000/`);

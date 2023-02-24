@@ -1,12 +1,10 @@
-interface CreateUsernameData {
+export interface CreateUsernameData {
   createUsername: {
     success: Boolean;
     error: String;
   };
 }
 
-interface CreateUsernameVariable {
+export interface CreateUsernameVariable {
   username: string;
 }
-
-export type { CreateUsernameData, CreateUsernameVariable };
