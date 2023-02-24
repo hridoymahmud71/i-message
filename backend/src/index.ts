@@ -2,6 +2,7 @@ import { ApolloServer } from "@apollo/server";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
 import { makeExecutableSchema } from "@graphql-tools/schema";
 import * as dotenv from "dotenv";
+import { getSession } from "next-auth/react";
 
 import express from "express";
 import http from "http";
@@ -12,10 +13,8 @@ import bodyParser from "body-parser";
 // internal exports
 import typeDefs from "../src/graphql/typeDefs";
 import resolvers from "../src/graphql/resolvers";
-
-interface MyContext {
-  token?: String;
-}
+import { GraphQLContext } from "../src/util/types";
+import { Session } from "./util/types";
 
 dotenv.config();
 
@@ -36,7 +35,7 @@ const schema = makeExecutableSchema({
   resolvers,
 });
 
-const server = new ApolloServer<MyContext>({
+const server = new ApolloServer<GraphQLContext>({
   schema,
   plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
 });
@@ -53,12 +52,18 @@ app.use(
   // expressMiddleware accepts the same arguments:
   // an Apollo Server instance and optional configuration options
   expressMiddleware(server, {
-    context: async ({ req, res }) => ({ token: req.headers.token }),
+    context: async ({ req }): Promise<GraphQLContext> => {
+      const session = await getSession({ req });
+      console.log("Here is session", session);
+      return null;
+    },
   })
 );
 
+const PORT = 4000;
+
 // Modified server startup
 await new Promise<void>((resolve) =>
-  httpServer.listen({ port: 4000 }, resolve)
+  httpServer.listen({ port: PORT }, resolve)
 );
-console.log(`🚀 Server ready at http://localhost:4000/`);
+console.log(`🚀 Server ready at http://localhost:${PORT}/`);
