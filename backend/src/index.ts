@@ -1,5 +1,10 @@
 import { ApolloServer } from "@apollo/server";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
+import {
+  ApolloServerPluginLandingPageLocalDefault,
+  ApolloServerPluginLandingPageProductionDefault,
+} from "@apollo/server/plugin/landingPage/default";
+
 import { makeExecutableSchema } from "@graphql-tools/schema";
 import * as dotenv from "dotenv";
 import { getSession } from "next-auth/react";
@@ -37,7 +42,10 @@ const schema = makeExecutableSchema({
 
 const server = new ApolloServer({
   schema,
-  plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+  plugins: [
+    ApolloServerPluginDrainHttpServer({ httpServer }),
+    ApolloServerPluginLandingPageLocalDefault({ includeCookies: true }),
+  ],
 });
 // Ensure we wait for our server to start
 await server.start();
